@@ -1,14 +1,30 @@
+require('dotenv').config()
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const mongoose = require("mongoose");
+  mongoose.set('useCreateIndex', true);
+const usersRoute = require("./routes/users.route");
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var hike = require('./routes/hike');
 
 var app = express();
+
+//use config module to get the privatekey, if no private key set, end the application
+if (!process.env.MYPRIVATEKEY) {
+  console.error("FATAL ERROR: MYPRIVATEKEY is not defined.");
+  process.exit(1);
+}
+
+//connect to mongodb
+mongoose
+  .connect("mongodb://18.223.63.25/nodejsauth", { useNewUrlParser: true,useUnifiedTopology: true  })
+  .then(() => console.log("Connected to MongoDB..."))
+  .catch(err => console.error("Could not connect to MongoDB..."));
 
 // TODO: change to router
 app.get('/hikes', hike.index);
@@ -23,6 +39,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 // app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(express.json());
+//use users route for api/users
+app.use("/api/users", usersRoute);
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
