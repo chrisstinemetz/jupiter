@@ -1,51 +1,69 @@
-const jwt = require('jsonwebtoken');
-const Joi = require('joi');
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
+const validator = require('validator')
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 
-//simple schema
-const UserSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    minlength: 3,
-    maxlength: 50
-  },
-  email: {
-    type: String,
-    required: true,
-    minlength: 5,
-    maxlength: 255,
-    unique: true
-  },
-  password: {
-    type: String,
-    required: true,
-    minlength: 3,
-    maxlength: 255
-  },
-  //give different access rights if admin or not 
-  isAdmin: Boolean
-});
+const userSchema = mongoose.Schema({
+    name: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+        lowercase: true,
+        validate: value => {
+            if (!validator.isEmail(value)) {
+                throw new Error({error: 'Invalid Email address'})
+            }
+        }
+    },
+    password: {
+        type: String,
+        required: true,
+        minLength: 7
+    },
+    tokens: [{
+        token: {
+            type: String,
+            required: true
+        }
+    }]
+})
 
+userSchema.pre('save', async function (next) {
+    // Hash the password before saving the user model
+    const user = this
+    if (user.isModified('password')) {
+        user.password = await bcrypt.hash(user.password, 8)
+    }
+    next()
+})
 
-//custom method to generate authToken 
-UserSchema.methods.generateAuthToken = function() { 
-  const token = jwt.sign({ _id: this._id, isAdmin: this.isAdmin }, process.env.MYPRIVATEKEY); //get the private key from the config file -> environment variable
-  return token;
+userSchema.methods.generateAuthToken = async function() {
+    // Generate an auth token for the user
+    const user = this
+    const token = jwt.sign({_id: user._id}, process.env.JWT_KEY)
+    user.tokens = user.tokens.concat({token})
+    await user.save()
+    return token
 }
 
-const User = mongoose.model('User', UserSchema);
-
-//function to validate user 
-function validateUser(user) {
-  const schema = {
-    name: Joi.string().min(3).max(50).required(),
-    email: Joi.string().min(5).max(255).required().email(),
-    password: Joi.string().min(3).max(255).required()
-  };
-
-  return Joi.validate(user, schema);
+userSchema.statics.findByCredentials = async (email, password) => {
+    // Search for a user by email and password.
+    const user = await User.findOne({ email} )
+    if (!user) {
+        throw new Error({ error: 'Invalid login credentials' })
+    }
+    const isPasswordMatch = await bcrypt.compare(password, user.password)
+    if (!isPasswordMatch) {
+        throw new Error({ error: 'Invalid login credentials' })
+    }
+    return user
 }
 
-exports.User = User; 
-exports.validate = validateUser;
+const User = mongoose.model('User', userSchema)
+
+module.exports = User
