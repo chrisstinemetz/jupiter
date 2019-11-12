@@ -8,6 +8,7 @@ const mongoose = require("mongoose");
   mongoose.set('useCreateIndex', true);
 const usersRoute = require("./routes/users");
 
+
 var indexRouter = require('./routes/index');
 
 const port = process.env.PORT
@@ -35,6 +36,7 @@ app.use(cookieParser());
 // app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(express.json());
+
 app.use('/', indexRouter);
 app.use('/v1', usersRoute);
 
