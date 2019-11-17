@@ -6,7 +6,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const mongoose = require("mongoose");
   mongoose.set('useCreateIndex', true);
-const usersRoute = require("./routes/users.route");
+const usersRoute = require("./routes/users.js");
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -62,5 +62,6 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
 
 module.exports = app;
