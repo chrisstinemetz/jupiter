@@ -1,18 +1,20 @@
-const jwt = require("jsonwebtoken");
+const jwt = require('jsonwebtoken')
+const User = require('../models/user.model')
 
-module.exports = function(req, res, next) {
-  //get the token from the header if present
-  const token = req.headers["x-access-token"] || req.headers["authorization"];
-  //if no token found, return response (without going to the next middelware)
-  if (!token) return res.status(401).send("Access denied. No token provided.");
+const auth = async(req, res, next) => {
+    const token = req.header('Authorization').replace('Bearer ', '')
+    const data = jwt.verify(token, process.env.JWT_KEY)
+    try {
+        const user = await User.findOne({ _id: data._id, 'tokens.token': token })
+        if (!user) {
+            throw new Error()
+        }
+        req.user = user
+        req.token = token
+        next()
+    } catch (error) {
+        res.status(401).send({ error: 'Not authorized to access this resource' })
+    }
 
-  try {
-    //if can verify the token, set req.user and pass to next middleware
-    const decoded = jwt.verify(token, process.env.MYPRIVATEKEY);
-    req.user = decoded;
-    next();
-  } catch (ex) {
-    //if invalid token
-    res.status(400).send("Invalid token.");
-  }
-};
+}
+module.exports = auth

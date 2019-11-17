@@ -6,29 +6,24 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const mongoose = require("mongoose");
   mongoose.set('useCreateIndex', true);
-const usersRoute = require("./routes/users.js");
+const usersRoute = require("./routes/users");
+
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+
+const port = process.env.PORT
+require('./db/dbConfig')
 var hike = require('./routes/hike');
 
 var app = express();
 
+app.use(express.json())
+
 //use config module to get the privatekey, if no private key set, end the application
-if (!process.env.MYPRIVATEKEY) {
-  console.error("FATAL ERROR: MYPRIVATEKEY is not defined.");
+if (!process.env.JWT_KEY) {
+  console.error("FATAL ERROR: JWT_KEY is not defined.");
   process.exit(1);
 }
-
-//connect to mongodb
-mongoose
-  .connect("mongodb://18.223.63.25/nodejsauth", { useNewUrlParser: true,useUnifiedTopology: true  })
-  .then(() => console.log("Connected to MongoDB..."))
-  .catch(err => console.error("Could not connect to MongoDB..."));
-
-// TODO: change to router
-app.get('/hikes', hike.index);
-app.post('/add_hike', hike.add_hike);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -41,11 +36,9 @@ app.use(cookieParser());
 // app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(express.json());
-//use users route for api/users
-app.use("/api/users", usersRoute);
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/v1', usersRoute);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
