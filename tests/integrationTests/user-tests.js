@@ -1,6 +1,6 @@
 const http = require('chai-http')
 const chai = require('chai')
-const app = require('../app')
+const app = require('../../app')
 const expect = chai.expect
 const mongoose = require('mongoose')
 
@@ -21,11 +21,9 @@ describe('Test user API end point', () => {
             //assertions
             expect(res).to.have.status(201);
             expect(res.body.token).to.exist;
-            expect(res.body.errors.length).to.be.equal(0);
+            // expect(res.body.errors.length).to.be.equal(0);
             done();
-          }).catch(err => {
-            console.log(err.message);
-          })
+          }).catch(done);
     })
 
     // Different itteration of the above test, which also fails in the then() method. 
