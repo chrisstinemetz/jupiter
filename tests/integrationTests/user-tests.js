@@ -7,58 +7,77 @@ const mongoose = require('mongoose')
 chai.use(http)
 
 describe('Test user API end point', () => {
-    const valid_user = {
+  const valid_user = {
+    name: "Test Person", 
+    email: "testEmail@gmail.com", 
+    password: "password", 
+    isAdmin: false
+  }
+
+  it('Should fail to create new user due to missing email', (done) => {
+    const user_empty_email = {
         name: "Garry Cabrera", 
-        email: "someEmail@gmail.com", 
+        email: "", 
         password: "password", 
         isAdmin: false
     }
+    chai.request(app).post('/v1/users')
+    .send(user_empty_email)
+        .then((res) => {
+          expect(res).to.have.status(400);
+          done();
+        }).catch(done)
+  })
 
-    it('Should return 200 and token after valid user creation', (done) => {
-        chai.request(app).post('/v1/users')
-        .send(valid_user)
-          .then((res) => {
-            //assertions
-            expect(res).to.have.status(201);
-            expect(res.body.token).to.exist;
-            // expect(res.body.errors.length).to.be.equal(0);
-            done();
-          }).catch(done);
-    })
+  it('Should return 200 and token after valid user creation', (done) => {
+      chai.request(app).post('/v1/users')
+      .send(valid_user)
+        .then((res) => {
+          //assertions
+          expect(res).to.have.status(201);
+          expect(res.body.token).to.exist;
+          //assign the created token to be reused for other tests
+          valid_user.token = res.body.token;
+          done();
+        }).catch(done);
+  })
 
-    // Different itteration of the above test, which also fails in the then() method. 
-    // describe('POST /users', () => {
-    //     it('should register a new user', (done) => {
-    //         chai.request(app).post('/v1/users')
-    //         .send({
-    //             name: "Garry Cabrera",
-    //             email: "gfunk@gmail.com",
-    //             password: "someRidiculousPassword"
-    //         })
-    //         .then((err, res) => {
-    //           should.not.exist(err);
-    //           res.redirects.length.should.eql(0);
-    //           res.status.should.eql(201);
-    //           res.type.should.eql('application/json');
-    //           res.body.should.include.keys('status', 'token');
-    //           res.body.status.should.eql('success');
-    //           done();
-    //         });
-    //       });
-    // })
+  it('Return 401 for passing invalid password of test user', (done) =>{
+    const user_invalid_password = {
+      name: "Test Person", 
+      email: "testEmail@gmail.com", 
+      password: "invalidPassword", 
+      isAdmin: false
+    }
 
-    // it('Should fail create new user due to missing email', (done) => {
-    //     const invalid_user = {
-    //         name: "Garry Cabrera", 
-    //         email: "", 
-    //         password: "password", 
-    //         isAdmin: false
-    //     }
-    //     chai.request(app).post('/users')
-    //     .send(invalid_user)
-    //         .then((res) => {
-    //             // console.log(res.body)
-    //             expect(res.body.token.to.exist)
-    //         })
-    // })
+    chai.request(app).post('/v1/users/login')
+    .send(user_invalid_password)
+      .then((res) => {
+        expect(res).to.have.status(401);
+        done();
+      }).catch(done);
+  })
+
+  it('Login the new registered test user and return 200', (done) => {
+    chai.request(app).post('/v1/users/login')
+    .send(valid_user)
+    .then((res) => {
+      expect(res).to.have.status(200);
+      done();
+    }).catch(done);
+  })
+
+    //After all tests are finished open db connection, drop db and close connection
+  after(function(done){
+    // mongoose connect options
+    var options = {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    }
+    mongoose.connect('mongodb://localhost:27017',options);
+    const db = mongoose.connection;
+    mongoose.connection.db.dropDatabase(function(){
+      mongoose.connection.close(done);
+    });
+  });
 })
