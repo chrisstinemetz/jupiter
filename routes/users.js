@@ -4,6 +4,10 @@ const User = require('../models/user.model')
 
 const router = express.Router()
 
+var cors = require('cors')
+
+router.use(cors({credentials: true, origin: true}))
+
 router.post('/users', async (req, res) => {
   // Create a new user
   try {
