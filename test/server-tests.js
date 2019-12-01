@@ -1,6 +1,6 @@
-/* const http = require('chai-http')
+const http = require('chai-http')
 const chai = require('chai')
-const app = require('../../app')
+const app = require('../app')
 const expect = chai.expect
 const mongoose = require('mongoose')
 
@@ -15,4 +15,3 @@ describe('Basic server tests', () => {
         })
     })
 })
- */

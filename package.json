@@ -4,8 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "test": "mocha ./tests/unitTests --timeout 60000 --exit",
-    "integrationTest": "mocha ./tests/integrationTests --exit"
+    "test": "mocha --timout 90000"
   },
   "dependencies": {
     "bcrypt": "^3.0.6",
