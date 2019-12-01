@@ -1,4 +1,4 @@
-const http = require('chai-http')
+/* const http = require('chai-http')
 const chai = require('chai')
 const app = require('../../app')
 const expect = chai.expect
@@ -15,3 +15,4 @@ describe('Basic server tests', () => {
         })
     })
 })
+ */

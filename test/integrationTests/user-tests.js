@@ -53,7 +53,7 @@ describe('Test user API end point', () => {
     chai.request(app).post('/v1/users/login')
     .send(user_invalid_password)
       .then((res) => {
-        expect(res).to.have.status(401);
+        expect(res).to.have.status(400);
         done();
       }).catch(done);
   })
@@ -67,7 +67,7 @@ describe('Test user API end point', () => {
     }).catch(done);
   })
 
-    //After all tests are finished open db connection, drop db and close connection
+  //After all tests are finished open db connection, drop db and close connection
   after(function(done){
     // mongoose connect options
     var options = {
