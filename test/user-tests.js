@@ -14,34 +14,28 @@ describe('Test user API end point', () => {
     isAdmin: false
   }
 
-    it('Should fail to create new user due to missing email', (done) => {
-      const user_empty_email = {
-        name: "Garry Cabrera",
-        email: "",
-        password: "password",
-        isAdmin: false
-      }
-      chai.request(app).post('/v1/users')
-        .send(user_empty_email)
-        .then((res) => {
-          expect(res).to.have.status(400);
-          done();
-        }).catch(done)
-    })
+  it('Should fail to create new user due to missing email', (done) => {
+    const user_empty_email = {
+      name: "Garry Cabrera",
+      email: "",
+      password: "password",
+      isAdmin: false
+    }
+    chai.request(app).post('/v1/users')
+      .send(user_empty_email)
+      .then((res) => {
+        expect(res).to.have.status(400);
+        done();
+      }).catch(done)
+  })
 
-  it('Should return 200 and token after valid user creation', (done) => {    
+  it('Should return 201 and token after valid user creation', (done) => {
     chai.request(app)
       .post('/v1/users')
-      .send({
-        "name": "Test Person",
-        "email": "testEmail@gmail.com",
-        "password": "password",
-        "isAdmin": false
-    })
+      .send({valid_user})
       .then((res) => {
         //assertions
-        console.log(res.body)
-        expect(res).to.have.status(400);
+        expect(res).to.have.status(201);
         expect(res.body.token).to.exist;
         //assign the created token to be reused for other tests
         valid_user.token = res.body.token;
@@ -57,7 +51,8 @@ describe('Test user API end point', () => {
   //     isAdmin: false
   //   }
 
-  //   chai.request(app).post('/v1/users/login')
+  //   chai.request(app)
+  //     .post('/v1/users/login')
   //     .send(user_invalid_password)
   //     .then((res) => {
   //       expect(res).to.have.status(400);
