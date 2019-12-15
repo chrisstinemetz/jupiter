@@ -6,7 +6,7 @@ const router = express.Router()
 
 var cors = require('cors')
 
-router.use(cors({credentials: true, origin: true}))
+router.use(cors({ credentials: true, origin: true }))
 
 router.post('/users', async (req, res) => {
   // Create a new user
@@ -33,7 +33,6 @@ router.post('/users/login', async (req, res) => {
   } catch (error) {
     res.status(400).send(error)
   }
-
 })
 
 router.get('/users/me', auth, async (req, res) => {
